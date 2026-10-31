@@ -119,14 +119,53 @@ html body #tarteaucitronRoot.tarteaucitronSize-popup #tarteaucitronAlertBig #tar
 	text-align: left;
 }
 
+/* Buttons two by two: accept | refuse, then customize | privacy policy. */
 html body #tarteaucitronRoot.tarteaucitronSize-popup div#tarteaucitronAlertBig button:not(#tarteaucitronCloseCross) {
 	display: block !important;
-	width: 100% !important;
+	float: left;
+	width: calc(50% - 4px) !important;
 	margin: 8px 0 0 !important;
+	padding: 10px 8px;
+	box-sizing: border-box;
+}
+
+html body #tarteaucitronRoot.tarteaucitronSize-popup div#tarteaucitronAlertBig #tarteaucitronPersonalize2,
+html body #tarteaucitronRoot.tarteaucitronSize-popup div#tarteaucitronAlertBig #tarteaucitronCloseAlert {
+	margin-right: 8px !important;
+}
+
+html body #tarteaucitronRoot.tarteaucitronSize-popup div#tarteaucitronAlertBig::after {
+	content: "";
+	display: table;
+	clear: both;
 }
 
 html body #tarteaucitronRoot.tarteaucitronSize-popup #tarteaucitronAlertBig #tarteaucitronPrivacyUrl {
-	padding: 6px 0 0;
+	font-size: 14px;
+}
+
+/* Small screens: the card spans the width, compact. */
+@media (max-width: 600px) {
+	html body #tarteaucitronRoot.tarteaucitronSize-popup div#tarteaucitronAlertBig,
+	html body.adeldev-cc-droite #tarteaucitronRoot.tarteaucitronSize-popup div#tarteaucitronAlertBig {
+		left: 8px !important;
+		right: 8px !important;
+		bottom: calc(8px + var(--cc-offset)) !important;
+		width: auto !important;
+		max-width: none !important;
+		padding: 14px !important;
+	}
+
+	html body #tarteaucitronRoot.tarteaucitronSize-popup #tarteaucitronAlertBig #tarteaucitronDisclaimerAlert {
+		margin-bottom: 4px;
+		font-size: 14px !important;
+		line-height: 1.4;
+	}
+
+	html body #tarteaucitronRoot.tarteaucitronSize-popup div#tarteaucitronAlertBig button:not(#tarteaucitronCloseCross) {
+		padding: 8px 6px;
+		font-size: 14px !important;
+	}
 }
 
 /* Bubble that reopens the panel */
