@@ -35,12 +35,6 @@ Dans la même page, section « Apparence » :
 
 Un thème peut aussi définir ces valeurs en CSS : `--adeldev-cc-background`, `--adeldev-cc-text`, `--adeldev-cc-accent`, `--adeldev-cc-accent-text`.
 
-**Éléments fixés en bas de l'écran :** avec le format « Barre en bas », le plugin publie la hauteur de la barre dans `--adeldev-cc-banner-height` (sur `<html>`). Cette valeur revient à `0px` une fois le choix fait. Pendant ce temps, `<body>` porte aussi la classe `adeldev-cc-banner-visible`. Le thème peut s'en servir pour placer ses boutons ou barres fixes au-dessus du bandeau :
-
-```css
-.ma-barre-fixe { bottom: var(--adeldev-cc-banner-height, 0px); }
-```
-
 ## Mises à jour
 
 - **Mises à jour du plugin :** WordPress les propose comme pour n'importe quelle extension, à partir des releases de ce dépôt (en-tête `Update URI`). On peut aussi activer les mises à jour automatiques sur chaque site.
