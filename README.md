@@ -23,7 +23,17 @@ Le plugin ne charge pas GTM : celui-ci reste chargé par le thème ou par un ext
    - la page de politique de confidentialité.
 4. Ajouter un lien « Gérer les cookies » vers `#gerer-cookies`.
 
-Les couleurs reprennent les couleurs prédéfinies du thème (`accent-1`, `accent-2`, `contrast`). Un thème peut les remplacer avec `--adeldev-cc-accent`, `--adeldev-cc-accent-hover` et `--adeldev-cc-background`.
+### Apparence
+
+Dans la même page, section « Apparence » :
+
+- **Format :** barre en bas, barre en haut, carte dans un coin ou fenêtre au centre.
+- **Côté :** gauche ou droite, pour la carte et la bulle. Choisissez le côté opposé aux boutons flottants du site.
+- **Décalage depuis le bas :** une valeur pour ordinateur et une pour les écrans de moins de 1024 px. Il sert à passer au-dessus d'une barre fixe, par exemple une barre d'appel sur mobile.
+- **Bulle :** une icône permanente pour modifier son choix, avec une image au choix dans la médiathèque.
+- **Couleurs :** fond, texte, boutons et texte des boutons. Laissées vides, elles reprennent les couleurs du thème (`accent-1`, `contrast`).
+
+Un thème peut aussi définir ces valeurs en CSS : `--adeldev-cc-background`, `--adeldev-cc-text`, `--adeldev-cc-accent`, `--adeldev-cc-accent-text`.
 
 ## Mises à jour
 

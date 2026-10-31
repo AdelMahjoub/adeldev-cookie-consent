@@ -1,25 +1,39 @@
 /*
  * Adeldev Cookie Consent — cookie banner (tarteaucitron). The library injects
- * its own stylesheet at runtime, so selectors here are more specific.
+ * its own stylesheet at runtime, so selectors here are more specific (and use
+ * !important where the library does).
  * "Tout accepter" and "Tout refuser" look the same, as the CNIL requires.
- * Colors come from the theme presets (accent-1, accent-2, contrast) when
- * they exist; a theme can override them with --adeldev-cc-* on :root.
+ *
+ * Variables set from Réglages → Cookies (includes/front.php), with the theme
+ * presets as fallbacks: --adeldev-cc-background, --adeldev-cc-text,
+ * --adeldev-cc-accent, --adeldev-cc-accent-text, --adeldev-cc-offset and
+ * --adeldev-cc-offset-mobile (below 1024px).
  */
 
 html body #tarteaucitronRoot {
 	--cc-accent: var(--adeldev-cc-accent, var(--wp--preset--color--accent-1, #1d4ed8));
-	--cc-accent-hover: var(--adeldev-cc-accent-hover, var(--wp--preset--color--accent-2, #1e40af));
+	--cc-accent-text: var(--adeldev-cc-accent-text, #fff);
 	--cc-background: var(--adeldev-cc-background, var(--wp--preset--color--contrast, #1a1a1b));
+	--cc-text: var(--adeldev-cc-text, #fff);
+	--cc-offset: var(--adeldev-cc-offset, 0px);
 	font-family: var(--wp--preset--font-family--inter, inherit);
+}
+
+@media (max-width: 1023px) {
+	html body #tarteaucitronRoot {
+		--cc-offset: var(--adeldev-cc-offset-mobile, 0px);
+	}
 }
 
 html body #tarteaucitronRoot * {
 	font-family: inherit;
 }
 
+/* Banner, whatever its format */
+
 html body #tarteaucitronRoot #tarteaucitronAlertBig {
 	background: var(--cc-background);
-	color: #fff;
+	color: var(--cc-text);
 	font-size: 15px;
 	line-height: 1.5;
 	padding: 16px 20px;
@@ -28,7 +42,7 @@ html body #tarteaucitronRoot #tarteaucitronAlertBig {
 
 html body #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronDisclaimerAlert,
 html body #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPrivacyUrl {
-	color: #fff;
+	color: var(--cc-text);
 	font-size: 15px;
 }
 
@@ -41,7 +55,7 @@ html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronAllow,
 html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronDeny,
 html body #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronCloseAlert {
 	background: var(--cc-accent);
-	color: #fff;
+	color: var(--cc-accent-text);
 	border: 2px solid var(--cc-accent);
 	border-radius: 6px;
 	font-size: 15px !important;
@@ -52,16 +66,99 @@ html body #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronCloseAlert {
 
 html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronAllow:hover,
 html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronDeny:hover {
-	background: var(--cc-accent-hover);
-	border-color: var(--cc-accent-hover);
+	filter: brightness(0.88);
 }
 
 html body #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronCloseAlert {
 	background: transparent;
-	border-color: #fff;
+	color: var(--cc-text);
+	border-color: currentColor;
 }
 
 html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCheck::before,
 html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCross::before {
 	display: none;
+}
+
+/* Bar at the bottom: raised above fixed bars */
+
+html body #tarteaucitronRoot.tarteaucitronSize-bottom #tarteaucitronAlertBig {
+	bottom: var(--cc-offset);
+}
+
+/* Card in a corner */
+
+html body #tarteaucitronRoot.tarteaucitronSize-popup div#tarteaucitronAlertBig {
+	top: auto !important;
+	bottom: calc(16px + var(--cc-offset)) !important;
+	left: 16px !important;
+	right: auto !important;
+	width: calc(100% - 32px) !important;
+	max-width: 380px !important;
+	padding: 20px !important;
+	border: 0;
+	border-radius: 12px !important;
+	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+	text-align: left;
+}
+
+html body.adeldev-cc-droite #tarteaucitronRoot.tarteaucitronSize-popup div#tarteaucitronAlertBig {
+	left: auto !important;
+	right: 16px !important;
+}
+
+html body #tarteaucitronRoot.tarteaucitronSize-popup div#tarteaucitronAlertBig::before {
+	content: none;
+}
+
+html body #tarteaucitronRoot.tarteaucitronSize-popup #tarteaucitronAlertBig #tarteaucitronDisclaimerAlert {
+	display: block;
+	margin: 0 0 12px;
+	padding: 0;
+	font-size: 15px !important;
+	text-align: left;
+}
+
+html body #tarteaucitronRoot.tarteaucitronSize-popup div#tarteaucitronAlertBig button:not(#tarteaucitronCloseCross) {
+	display: block !important;
+	width: 100% !important;
+	margin: 8px 0 0 !important;
+}
+
+html body #tarteaucitronRoot.tarteaucitronSize-popup #tarteaucitronAlertBig #tarteaucitronPrivacyUrl {
+	padding: 6px 0 0;
+}
+
+/* Bubble that reopens the panel */
+
+html body #tarteaucitronIcon {
+	bottom: calc(12px + var(--adeldev-cc-offset, 0px));
+	left: 12px;
+	right: auto;
+}
+
+html body.adeldev-cc-droite #tarteaucitronIcon {
+	left: auto;
+	right: 12px;
+}
+
+@media (max-width: 1023px) {
+	html body #tarteaucitronIcon {
+		bottom: calc(12px + var(--adeldev-cc-offset-mobile, 0px));
+	}
+}
+
+html body #tarteaucitronIcon #tarteaucitronManager {
+	padding: 0;
+	background: transparent;
+	border-radius: 50%;
+}
+
+html body #tarteaucitronIcon #tarteaucitronManager img {
+	display: block;
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	object-fit: cover;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }

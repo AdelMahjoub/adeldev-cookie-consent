@@ -55,7 +55,14 @@ function adeldev_cc_config(): array {
 		);
 	}
 
-	$privacy = $settings['page_confidentialite'] ? get_permalink( $settings['page_confidentialite'] ) : '';
+	$privacy     = $settings['page_confidentialite'] ? get_permalink( $settings['page_confidentialite'] ) : '';
+	$orientation = array(
+		'barre-bas'  => 'bottom',
+		'barre-haut' => 'top',
+		'carte'      => 'popup',
+		'fenetre'    => 'middle',
+	);
+	$icon        = $settings['bulle_image'] ? wp_get_attachment_image_url( (int) $settings['bulle_image'], 'thumbnail' ) : '';
 
 	return array(
 		'services'     => $services,
@@ -63,13 +70,15 @@ function adeldev_cc_config(): array {
 			'privacyUrl'              => $privacy ? $privacy : '',
 			'hashtag'                 => '#gerer-cookies',
 			'cookieName'              => 'adeldev_cookie_consent',
-			'orientation'             => 'bottom',
+			'orientation'             => $orientation[ $settings['format'] ] ?? 'bottom',
 			'groupServices'           => false,
 			'showDetailsOnClick'      => true,
 			'serviceDefaultState'     => 'wait',
 			'showAlertSmall'          => false,
 			'cookieslist'             => true,
-			'showIcon'                => false,
+			'showIcon'                => '1' === $settings['bulle'],
+			'iconPosition'            => 'droite' === $settings['cote'] ? 'BottomRight' : 'BottomLeft',
+			'iconSrc'                 => $icon ? $icon : '',
 			'adblocker'               => false,
 			'DenyAllCta'              => true,
 			'AcceptAllCta'            => true,
@@ -138,10 +147,51 @@ JS;
 add_action( 'wp_enqueue_scripts', 'adeldev_cc_assets' );
 
 /**
- * Banner colors (the library injects its own stylesheet at runtime).
+ * Banner styles, with the colors and offsets from the settings as CSS
+ * variables (the library injects its own stylesheet at runtime).
  */
 function adeldev_cc_assets(): void {
-	if ( adeldev_cc_enabled() ) {
-		wp_enqueue_style( 'adeldev-cookie-consent', ADELDEV_CC_URL . 'assets/consent.css', array(), ADELDEV_CC_VERSION );
+	if ( ! adeldev_cc_enabled() ) {
+		return;
 	}
+
+	$settings  = adeldev_cc_settings();
+	$variables = array(
+		'--adeldev-cc-offset'        => (int) $settings['decalage'] . 'px',
+		'--adeldev-cc-offset-mobile' => (int) $settings['decalage_mobile'] . 'px',
+	);
+	$colors    = array(
+		'couleur_fond'         => '--adeldev-cc-background',
+		'couleur_texte'        => '--adeldev-cc-text',
+		'couleur_bouton'       => '--adeldev-cc-accent',
+		'couleur_bouton_texte' => '--adeldev-cc-accent-text',
+	);
+	foreach ( $colors as $key => $variable ) {
+		if ( sanitize_hex_color( $settings[ $key ] ) ) {
+			$variables[ $variable ] = $settings[ $key ];
+		}
+	}
+
+	$css = '';
+	foreach ( $variables as $variable => $value ) {
+		$css .= $variable . ':' . $value . ';';
+	}
+
+	wp_enqueue_style( 'adeldev-cookie-consent', ADELDEV_CC_URL . 'assets/consent.css', array(), ADELDEV_CC_VERSION );
+	wp_add_inline_style( 'adeldev-cookie-consent', ':root{' . $css . '}' );
+}
+
+add_filter( 'body_class', 'adeldev_cc_body_class' );
+
+/**
+ * Side of the card and bubble, used by assets/consent.css.
+ *
+ * @param string[] $classes Body classes.
+ * @return string[]
+ */
+function adeldev_cc_body_class( array $classes ): array {
+	if ( adeldev_cc_enabled() ) {
+		$classes[] = 'adeldev-cc-' . ( 'droite' === adeldev_cc_settings()['cote'] ? 'droite' : 'gauche' );
+	}
+	return $classes;
 }

@@ -3,7 +3,7 @@
  * Plugin Name:       Adeldev Cookie Consent
  * Plugin URI:        https://github.com/AdelMahjoub/adeldev-cookie-consent
  * Description:       Bandeau de consentement aux cookies (tarteaucitron, hébergé localement) et Google Consent Mode v2 pour GA4 et Google Ads chargés par Google Tag Manager. Réglages : Réglages → Cookies.
- * Version:           0.1.1
+ * Version:           0.2.0
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            Adel Mahjoub
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ADELDEV_CC_VERSION', '0.1.1' );
+define( 'ADELDEV_CC_VERSION', '0.2.0' );
 define( 'ADELDEV_CC_TARTEAUCITRON', '1.37.0' );
 define( 'ADELDEV_CC_OPTION', 'adeldev_cookie_consent' );
 define( 'ADELDEV_CC_FILE', __FILE__ );
