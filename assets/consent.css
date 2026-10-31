@@ -1,0 +1,73 @@
+/*
+ * Adeldev Cookie Consent — cookie banner (tarteaucitron). The library injects
+ * its own stylesheet at runtime, so selectors here are more specific.
+ * "Tout accepter" and "Tout refuser" look the same, as the CNIL requires.
+ * Colors come from the theme presets (accent-1, accent-2, contrast) when
+ * they exist; a theme can override them with --adeldev-cc-* on :root.
+ */
+
+html body #tarteaucitronRoot {
+	--cc-accent: var(--adeldev-cc-accent, var(--wp--preset--color--accent-1, #1d4ed8));
+	--cc-accent-hover: var(--adeldev-cc-accent-hover, var(--wp--preset--color--accent-2, #1e40af));
+	--cc-background: var(--adeldev-cc-background, var(--wp--preset--color--contrast, #1a1a1b));
+	font-family: var(--wp--preset--font-family--inter, inherit);
+}
+
+html body #tarteaucitronRoot * {
+	font-family: inherit;
+}
+
+html body #tarteaucitronRoot #tarteaucitronAlertBig {
+	background: var(--cc-background);
+	color: #fff;
+	font-size: 15px;
+	line-height: 1.5;
+	padding: 16px 20px;
+	box-sizing: border-box;
+}
+
+html body #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronDisclaimerAlert,
+html body #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPrivacyUrl {
+	color: #fff;
+	font-size: 15px;
+}
+
+html body #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronPrivacyUrl {
+	background: transparent;
+	text-decoration: underline;
+}
+
+html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronAllow,
+html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronDeny,
+html body #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronCloseAlert {
+	background: var(--cc-accent);
+	color: #fff;
+	border: 2px solid var(--cc-accent);
+	border-radius: 6px;
+	font-size: 15px !important;
+	font-weight: 600;
+	padding: 10px 18px;
+	margin: 6px 4px 0;
+}
+
+html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronAllow:hover,
+html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronDeny:hover {
+	background: var(--cc-accent-hover);
+	border-color: var(--cc-accent-hover);
+}
+
+html body #tarteaucitronRoot #tarteaucitronAlertBig #tarteaucitronCloseAlert {
+	background: transparent;
+	border-color: #fff;
+}
+
+html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCheck::before,
+html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCross::before {
+	display: none;
+}
+
+/* Above sticky headers and floating contact buttons. */
+html body #tarteaucitronRoot #tarteaucitronAlertBig,
+html body #tarteaucitronRoot #tarteaucitron {
+	z-index: 2147483645;
+}

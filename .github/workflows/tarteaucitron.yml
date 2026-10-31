@@ -1,0 +1,73 @@
+# Weekly check for a new tarteaucitron release. When there is one, copy the
+# files the plugin uses into assets/vendor/tarteaucitron, bump the plugin's
+# patch version and open a pull request. Merging it publishes a release
+# (see release.yml), which sites then receive as a normal plugin update.
+#
+# Requires: Settings → Actions → General → "Allow GitHub Actions to create
+# and approve pull requests".
+
+name: Mise à jour de tarteaucitron
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compare versions
+        id: versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest=$(gh api repos/AmauriC/tarteaucitron.js/releases/latest --jq .tag_name | sed 's/^v//')
+          current=$(grep -oP "ADELDEV_CC_TARTEAUCITRON', '\K[0-9.]+" adeldev-cookie-consent.php)
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          if [ "$latest" != "$current" ]; then echo "update=1" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Copy the new files
+        if: steps.versions.outputs.update
+        env:
+          VERSION: ${{ steps.versions.outputs.latest }}
+        run: |
+          src=$(mktemp -d)
+          curl -sSL "https://github.com/AmauriC/tarteaucitron.js/archive/refs/tags/v${VERSION}.tar.gz" | tar xz -C "$src" --strip-components=1
+          dest=assets/vendor/tarteaucitron
+          cp "$src/tarteaucitron.min.js" "$src/tarteaucitron.services.min.js" "$src/LICENSE" "$dest/"
+          cp "$src/lang/tarteaucitron.fr.min.js" "$dest/lang/"
+          cp "$src/css/tarteaucitron.min.css" "$dest/css/"
+
+          # Bump the library constant and the plugin's patch version.
+          plugin=$(grep -oP "ADELDEV_CC_VERSION', '\K[0-9.]+" adeldev-cookie-consent.php)
+          next=$(echo "$plugin" | awk -F. '{ print $1"."$2"."$3+1 }')
+          sed -i \
+            -e "s/ADELDEV_CC_TARTEAUCITRON', '[0-9.]*'/ADELDEV_CC_TARTEAUCITRON', '${VERSION}'/" \
+            -e "s/ADELDEV_CC_VERSION', '[0-9.]*'/ADELDEV_CC_VERSION', '${next}'/" \
+            -e "s/^ \* Version: .*/ * Version:           ${next}/" \
+            adeldev-cookie-consent.php
+          echo "NEXT=$next" >> "$GITHUB_ENV"
+
+      - name: Open the pull request
+        if: steps.versions.outputs.update
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: tarteaucitron-${{ steps.versions.outputs.latest }}
+          commit-message: 'tarteaucitron ${{ steps.versions.outputs.latest }}'
+          title: 'tarteaucitron ${{ steps.versions.outputs.current }} → ${{ steps.versions.outputs.latest }}'
+          body: |
+            Nouvelle version de tarteaucitron : https://github.com/AmauriC/tarteaucitron.js/releases/tag/v${{ steps.versions.outputs.latest }}
+
+            Le plugin passe en ${{ env.NEXT }}. À vérifier avant de fusionner :
+            - le bandeau s'affiche et « Tout accepter » / « Tout refuser » fonctionnent ;
+            - le panneau s'ouvre avec le lien `#gerer-cookies`.
+
+            La fusion publie la release, puis les sites proposent la mise à jour.

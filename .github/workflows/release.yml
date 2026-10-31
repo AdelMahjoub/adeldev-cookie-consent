@@ -1,0 +1,53 @@
+# Publish a release whenever the plugin version on main has no tag yet.
+# The release carries adeldev-cookie-consent.zip, which the plugin's updater
+# (includes/updater.php) offers to every site.
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          header=$(grep -oP '^ \* Version:\s*\K[0-9.]+' adeldev-cookie-consent.php)
+          constant=$(grep -oP "ADELDEV_CC_VERSION', '\K[0-9.]+" adeldev-cookie-consent.php)
+          if [ "$header" != "$constant" ]; then
+            echo "Version header ($header) and ADELDEV_CC_VERSION ($constant) differ." >&2
+            exit 1
+          fi
+          echo "version=$header" >> "$GITHUB_OUTPUT"
+          if gh release view "v$header" > /dev/null 2>&1; then
+            echo "v$header already released."
+          else
+            echo "new=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build the zip
+        if: steps.version.outputs.new
+        run: |
+          mkdir -p build/adeldev-cookie-consent
+          git archive HEAD | tar -x -C build/adeldev-cookie-consent
+          cd build && zip -qr adeldev-cookie-consent.zip adeldev-cookie-consent
+
+      - name: Publish the release
+        if: steps.version.outputs.new
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "v$VERSION" build/adeldev-cookie-consent.zip \
+            --title "v$VERSION" --generate-notes --target "$GITHUB_SHA"
