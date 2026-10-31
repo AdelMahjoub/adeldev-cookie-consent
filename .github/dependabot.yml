@@ -1,0 +1,8 @@
+# The workflows pin third-party actions to commit SHAs; Dependabot opens a
+# pull request when a new version of one of them is released.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
