@@ -2,8 +2,12 @@
 /**
  * Updates from GitHub releases. The plugin header's "Update URI" points to
  * github.com, so WordPress asks the update_plugins_github.com filter instead
- * of WordPress.org. Each release must carry an adeldev-cookie-consent.zip
- * asset (built by .github/workflows/release.yml).
+ * of WordPress.org.
+ *
+ * Each release carries release.json ({"version", "package", "url"}), built by
+ * .github/workflows/release.yml. It is read through the github.com
+ * "releases/latest/download" redirect, which is not subject to the REST API's
+ * 60 requests/hour limit per IP (often reached on shared hosting).
  *
  * @package Adeldev_Cookie_Consent
  */
@@ -27,24 +31,23 @@ function adeldev_cc_latest_release(): ?array {
 		'url'     => '',
 	);
 	$response = wp_remote_get(
-		'https://api.github.com/repos/' . ADELDEV_CC_REPOSITORY . '/releases/latest',
-		array(
-			'timeout' => 10,
-			'headers' => array( 'Accept' => 'application/vnd.github+json' ),
-		)
+		'https://github.com/' . ADELDEV_CC_REPOSITORY . '/releases/latest/download/release.json',
+		array( 'timeout' => 10 )
 	);
 
 	if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
-		$data = json_decode( wp_remote_retrieve_body( $response ), true );
-		foreach ( (array) ( $data['assets'] ?? array() ) as $asset ) {
-			if ( 'adeldev-cookie-consent.zip' === ( $asset['name'] ?? '' ) ) {
-				$release = array(
-					'version' => ltrim( (string) ( $data['tag_name'] ?? '' ), 'v' ),
-					'package' => (string) $asset['browser_download_url'],
-					'url'     => (string) ( $data['html_url'] ?? '' ),
-				);
-				break;
-			}
+		$data    = json_decode( wp_remote_retrieve_body( $response ), true );
+		$version = is_array( $data ) ? (string) ( $data['version'] ?? '' ) : '';
+		$package = is_array( $data ) ? (string) ( $data['package'] ?? '' ) : '';
+		$prefix  = 'https://github.com/' . ADELDEV_CC_REPOSITORY . '/releases/download/';
+
+		// Only accept packages from this repository's releases.
+		if ( preg_match( '/^\d+\.\d+\.\d+$/', $version ) && str_starts_with( $package, $prefix ) ) {
+			$release = array(
+				'version' => $version,
+				'package' => $package,
+				'url'     => (string) ( $data['url'] ?? '' ),
+			);
 		}
 	}
 
@@ -56,7 +59,9 @@ function adeldev_cc_latest_release(): ?array {
 add_filter( 'update_plugins_github.com', 'adeldev_cc_update', 10, 3 );
 
 /**
- * Offer the latest release to WordPress' update check.
+ * Answer WordPress' update check. When GitHub can't be reached, report the
+ * installed version: the plugin is then listed as "no update" and keeps its
+ * auto-update toggle instead of looking unsupported.
  *
  * @param array|false $update      Update data from earlier filters.
  * @param array       $plugin_data Plugin headers.
@@ -68,10 +73,11 @@ function adeldev_cc_update( $update, array $plugin_data, string $plugin_file ) {
 		return $update;
 	}
 
-	$release = adeldev_cc_latest_release();
-	if ( ! $release ) {
-		return $update;
-	}
+	$release = adeldev_cc_latest_release() ?? array(
+		'version' => ADELDEV_CC_VERSION,
+		'package' => '',
+		'url'     => 'https://github.com/' . ADELDEV_CC_REPOSITORY,
+	);
 
 	return array(
 		'id'      => $plugin_data['UpdateURI'],

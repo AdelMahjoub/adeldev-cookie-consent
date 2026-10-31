@@ -65,9 +65,3 @@ html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCheck::before,
 html body #tarteaucitronRoot #tarteaucitronAlertBig .tarteaucitronCross::before {
 	display: none;
 }
-
-/* Above sticky headers and floating contact buttons. */
-html body #tarteaucitronRoot #tarteaucitronAlertBig,
-html body #tarteaucitronRoot #tarteaucitron {
-	z-index: 2147483645;
-}

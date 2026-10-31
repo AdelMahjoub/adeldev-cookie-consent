@@ -1,6 +1,6 @@
 # Publish a release whenever the plugin version on main has no tag yet.
-# The release carries adeldev-cookie-consent.zip, which the plugin's updater
-# (includes/updater.php) offers to every site.
+# The release carries adeldev-cookie-consent.zip and release.json, which the
+# plugin's updater (includes/updater.php) reads to offer the update to sites.
 
 name: Release
 
@@ -43,11 +43,24 @@ jobs:
           git archive HEAD | tar -x -C build/adeldev-cookie-consent
           cd build && zip -qr adeldev-cookie-consent.zip adeldev-cookie-consent
 
+      - name: Write release.json
+        if: steps.version.outputs.new
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Read by includes/updater.php through releases/latest/download.
+          jq -n --arg v "$VERSION" --arg r "$REPO" '{
+            version: $v,
+            package: "https://github.com/\($r)/releases/download/v\($v)/adeldev-cookie-consent.zip",
+            url: "https://github.com/\($r)/releases/tag/v\($v)"
+          }' > build/release.json
+
       - name: Publish the release
         if: steps.version.outputs.new
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "v$VERSION" build/adeldev-cookie-consent.zip \
+          gh release create "v$VERSION" build/adeldev-cookie-consent.zip build/release.json \
             --title "v$VERSION" --generate-notes --target "$GITHUB_SHA"
