@@ -59,4 +59,28 @@
 			tarteaucitron.userInterface.openPanel();
 		}
 	});
+
+	// While the bottom bar is shown, publish its height so the theme can lift
+	// its own fixed elements above it:
+	//   bottom: var(--adeldev-cc-banner-height, 0px);
+	// The variable is 0px once the visitor has chosen (or for other formats),
+	// and body gets the class adeldev-cc-banner-visible meanwhile.
+	window.addEventListener('tac.root_available', function () {
+		var banner = document.getElementById('tarteaucitronAlertBig');
+		if (!banner || config.tarteaucitron.orientation !== 'bottom') {
+			return;
+		}
+		var root = document.documentElement;
+		var sync = function () {
+			// offsetParent is always null for fixed elements: check display.
+			var height = window.getComputedStyle(banner).display !== 'none' ? banner.offsetHeight : 0;
+			root.style.setProperty('--adeldev-cc-banner-height', height + 'px');
+			document.body.classList.toggle('adeldev-cc-banner-visible', height > 0);
+		};
+		sync();
+		if (window.ResizeObserver) {
+			new ResizeObserver(sync).observe(banner);
+		}
+		new MutationObserver(sync).observe(banner, { attributes: true, attributeFilter: ['style', 'class'] });
+	});
 })();
